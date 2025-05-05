@@ -26,7 +26,7 @@ export default function UserProfile({ name, image }: IUser) {
           <Image
             src={image}
             alt="user"
-            layout="fill"
+            fill
             className="rounded-full"
           />
         </div>
