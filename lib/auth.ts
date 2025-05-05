@@ -1,10 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
-
 import prisma from "@/lib/prisma";
-import { env } from "@/env.mjs";
+import { AuthStrategyFactory } from "./auth/strategies/AuthStrategyFactory";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -14,23 +11,9 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/",
   },
-  providers: [
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID as string,
-      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
-    FacebookProvider({
-      clientId: env.FACEBOOK_ID as string,
-      clientSecret: env.FACEBOOK_SECRET as string,
-    }),
-  ],
+  providers: AuthStrategyFactory.getAllStrategies().map((strategy) =>
+    strategy.getProvider()
+  ),
   callbacks: {
     session: ({ session, token }) => {
       return {
@@ -38,7 +21,6 @@ export const authOptions: NextAuthOptions = {
         user: {
           ...session.user,
           id: token.id,
-          randomKey: token.randomKey,
         },
       };
     },

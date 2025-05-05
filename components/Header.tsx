@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import UserProfile from "./UserProfile";
-import LoginButton from "./LoginButton";
 
 export default async function Header() {
   const user = await getCurrentUser();
@@ -14,11 +13,7 @@ export default async function Header() {
             Rubik{`'`}s Cube
           </Link>
           <div className="flex items-center gap-4">
-            {user ? (
-              <UserProfile name={user.name!} image={user.image!} />
-            ) : (
-              <LoginButton />
-            )}
+            {user && <UserProfile name={user.name!} image={user.image!} />}
           </div>
         </div>
       </nav>

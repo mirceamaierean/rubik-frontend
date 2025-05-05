@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@theme {
+  /* Rubik's cube colors */
+  --color-cube-white: #ffffff; /* Front face */
+  --color-cube-yellow: #ffd500; /* Back face */
+  --color-cube-red: #ff0000; /* Right face */
+  --color-cube-orange: #ff8c00; /* Left face */
+  --color-cube-blue: #0051ba; /* Top face */
+  --color-cube-green: #009e60; /* Bottom face */
+  --color-cube-black: #000000; /* Cube border */
+}

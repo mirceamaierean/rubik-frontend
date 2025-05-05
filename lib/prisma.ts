@@ -1,5 +1,3 @@
-// prisma.ts
-
 import { PrismaClient } from "@/generated/prisma";
 
 const prismaClientSingleton = () => {
