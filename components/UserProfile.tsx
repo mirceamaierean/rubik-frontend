@@ -25,7 +25,7 @@ export default function UserProfile({ name, image }: IUser) {
         <div className="relative h-10 w-10 cursor-pointer select-none rounded-full">
           <Image
             src={image}
-            alt="user"
+            alt="User Profile Image"
             fill
             className="rounded-full"
           />
