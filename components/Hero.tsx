@@ -20,16 +20,16 @@ export default function Hero() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link
-              href="/login"
+              href="/cube"
               className="rounded-md bg-cube-blue px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cube-blue/90 focus-visible:outline-offset-2 focus-visible:outline-cube-blue"
             >
               Start Solving
             </Link>
             <Link
-              href="/learn"
+              href="/login"
               className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-cube-blue dark:hover:text-cube-blue"
             >
-              Learn More <span aria-hidden="true">→</span>
+              Create an account <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
