@@ -94,7 +94,6 @@ export default function CubeViewer() {
         {Array.from({ length: GRID_SIZE * GRID_COLS }).map((_, idx) => {
           const row = Math.floor(idx / GRID_COLS);
           const col = idx % GRID_COLS;
-          console.log(row, col);
           const color = getNetCell(cube, row, col);
           return color ? (
             <div
