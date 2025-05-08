@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/",
   },
   providers: AuthStrategyFactory.getAllStrategies().map((strategy) =>
-    strategy.getProvider()
+    strategy.getProvider(),
   ),
   callbacks: {
     session: ({ session, token }) => {
