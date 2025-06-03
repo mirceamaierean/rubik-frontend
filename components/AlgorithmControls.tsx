@@ -23,14 +23,14 @@ const algorithms = [
     move: new Algorithm([new FMove(true), new UMove(true), new FMove()]),
   },
   {
-    name: "R U2 R' U' R U' R'",
+    name: "R U2 R' U' R U R'",
     move: new Algorithm([
       new RMove(),
       new UMove(),
       new UMove(),
       new RMove(true),
       new UMove(true),
-      new RMove(true),
+      new RMove(),
       new UMove(),
       new RMove(true),
     ]),
