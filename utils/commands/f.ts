@@ -57,6 +57,4 @@ export class FMove extends Move {
       }
     }
   }
-
-  undo(cube: RubiksCube) {}
 }

@@ -10,6 +10,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().min(1),
     FACEBOOK_ID: z.string().min(1),
     FACEBOOK_SECRET: z.string().min(1),
+    FLASK_URL: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -23,5 +24,6 @@ export const env = createEnv({
     FACEBOOK_ID: process.env.FACEBOOK_ID,
     FACEBOOK_SECRET: process.env.FACEBOOK_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    FLASK_URL: process.env.FLASK_URL,
   },
 });

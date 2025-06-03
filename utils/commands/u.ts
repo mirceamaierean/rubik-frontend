@@ -37,7 +37,4 @@ export class UMove extends Move {
       }
     }
   }
-
-  // Optionally implement undo for R'
-  undo(cube: RubiksCube) {}
 }

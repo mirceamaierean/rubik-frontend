@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { RubiksCube, getCubeColorClass } from "@/utils/rubiksCube";
+import { CubeColor } from "@/types/rubiksCube";
 import { RMove } from "@/utils/commands/r";
 import { LMove } from "@/utils/commands/l";
 import { Move } from "@/utils/commands/move";
@@ -14,52 +15,63 @@ import AlgorithmControls from "./AlgorithmControls";
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
 
-function getNetCell(cube: RubiksCube, row: number, col: number): string | null {
-  if (row >= 0 && row < 3 && col >= 3 && col < 6) {
-    return cube.faces.U[row][col - 3];
-  }
+const COLORS = ["white", "yellow", "red", "orange", "blue", "green"];
 
-  if (row >= 3 && row < 6 && col >= 0 && col < 3) {
-    return cube.faces.L[row - 3][col];
-  }
-
-  if (row >= 3 && row < 6 && col >= 3 && col < 6) {
-    return cube.faces.F[row - 3][col - 3];
-  }
-
-  if (row >= 3 && row < 6 && col >= 6 && col < 9) {
-    return cube.faces.R[row - 3][col - 6];
-  }
-
-  if (row >= 3 && row < 6 && col >= 9 && col < 12) {
-    return cube.faces.B[row - 3][col - 9];
-  }
-
-  if (row >= 6 && row < 9 && col >= 3 && col < 6) {
-    return cube.faces.D[row - 6][col - 3];
-  }
-
+function getFaceCell(
+  row: number,
+  col: number
+): {
+  face: keyof RubiksCube["faces"];
+  faceRow: number;
+  faceCol: number;
+} | null {
+  if (row >= 0 && row < 3 && col >= 3 && col < 6)
+    return { face: "U", faceRow: row, faceCol: col - 3 };
+  if (row >= 3 && row < 6 && col >= 0 && col < 3)
+    return { face: "L", faceRow: row - 3, faceCol: col };
+  if (row >= 3 && row < 6 && col >= 3 && col < 6)
+    return { face: "F", faceRow: row - 3, faceCol: col - 3 };
+  if (row >= 3 && row < 6 && col >= 6 && col < 9)
+    return { face: "R", faceRow: row - 3, faceCol: col - 6 };
+  if (row >= 3 && row < 6 && col >= 9 && col < 12)
+    return { face: "B", faceRow: row - 3, faceCol: col - 9 };
+  if (row >= 6 && row < 9 && col >= 3 && col < 6)
+    return { face: "D", faceRow: row - 6, faceCol: col - 3 };
   return null;
 }
 
-export default function CubeViewer() {
-  const initialCube = RubiksCube.solved();
-  const [cube, setCube] = useState(() => initialCube.clone());
+export default function CubeViewer({
+  faces,
+  onCubeChange,
+}: {
+  faces: RubiksCube["faces"];
+  onCubeChange?: (faces: RubiksCube["faces"]) => void;
+}) {
+  const [cube, setCube] = useState(() => new RubiksCube(faces));
   const [undoStack, setUndoStack] = useState<Move[]>([]);
   const [redoStack, setRedoStack] = useState<Move[]>([]);
+  const [selectedCell, setSelectedCell] = useState<{
+    face: keyof RubiksCube["faces"];
+    faceRow: number;
+    faceCol: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const applyMoves = (moves: Move[]) => {
-    const newCube = initialCube.clone();
+    const newCube = cube.clone();
     moves.forEach((move) => move.execute(newCube));
     return newCube;
   };
 
   const executeCommand = (command: Move) => {
-    const newUndoStack = [...undoStack, command];
-    const newCube = applyMoves(newUndoStack);
-    setUndoStack(newUndoStack);
-    setRedoStack([]);
+    const newCube = cube.clone();
+    command.execute(newCube);
     setCube(newCube);
+    setUndoStack([...undoStack, command]);
+    setRedoStack([]);
+    if (onCubeChange) onCubeChange(newCube.faces);
   };
 
   const handleUndo = () => {
@@ -68,7 +80,9 @@ export default function CubeViewer() {
     const undoneMove = undoStack[undoStack.length - 1];
     setUndoStack(newUndoStack);
     setRedoStack((prev) => [...prev, undoneMove]);
-    setCube(applyMoves(newUndoStack));
+    const newCube = applyMoves(newUndoStack);
+    setCube(newCube);
+    if (onCubeChange) onCubeChange(newCube.faces);
   };
 
   const handleRedo = () => {
@@ -78,12 +92,60 @@ export default function CubeViewer() {
     const newUndoStack = [...undoStack, redoMove];
     setUndoStack(newUndoStack);
     setRedoStack(newRedoStack);
-    setCube(applyMoves(newUndoStack));
+    const newCube = applyMoves(newUndoStack);
+    setCube(newCube);
+    if (onCubeChange) onCubeChange(newCube.faces);
   };
+
+  const handleCellClick = (row: number, col: number) => {
+    const cell = getFaceCell(row, col);
+    if (cell && gridRef.current) {
+      const rect = gridRef.current.getBoundingClientRect();
+      const cellSize = 40; // 2.5rem * 16px = 40px
+      const x = col * cellSize + rect.left + window.scrollX;
+      const y = row * cellSize + rect.top + window.scrollY;
+      setSelectedCell({ ...cell, x, y });
+    }
+  };
+
+  const handleColorSelect = (color: string) => {
+    if (selectedCell) {
+      const { face, faceRow, faceCol } = selectedCell;
+      const newCube = cube.clone();
+      newCube.faces[face][faceRow][faceCol] = color as CubeColor;
+      setCube(newCube);
+      setSelectedCell(null);
+      if (onCubeChange) onCubeChange(newCube.faces);
+    }
+  };
+
+  // Ensure getNetCell uses the current cube state
+  function getNetCellCurrent(row: number, col: number): string | null {
+    if (row >= 0 && row < 3 && col >= 3 && col < 6) {
+      return cube.faces.U[row][col - 3];
+    }
+    if (row >= 3 && row < 6 && col >= 0 && col < 3) {
+      return cube.faces.L[row - 3][col];
+    }
+    if (row >= 3 && row < 6 && col >= 3 && col < 6) {
+      return cube.faces.F[row - 3][col - 3];
+    }
+    if (row >= 3 && row < 6 && col >= 6 && col < 9) {
+      return cube.faces.R[row - 3][col - 6];
+    }
+    if (row >= 3 && row < 6 && col >= 9 && col < 12) {
+      return cube.faces.B[row - 3][col - 9];
+    }
+    if (row >= 6 && row < 9 && col >= 3 && col < 6) {
+      return cube.faces.D[row - 6][col - 3];
+    }
+    return null;
+  }
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center py-8">
       <div
+        ref={gridRef}
         className="grid"
         style={{
           gridTemplateColumns: `repeat(${GRID_COLS}, 2.5rem)`,
@@ -94,19 +156,43 @@ export default function CubeViewer() {
         {Array.from({ length: GRID_SIZE * GRID_COLS }).map((_, idx) => {
           const row = Math.floor(idx / GRID_COLS);
           const col = idx % GRID_COLS;
-          const color = getNetCell(cube, row, col);
+          const color = getNetCellCurrent(row, col);
           return color ? (
             <div
               key={idx}
               className={`border border-black ${getCubeColorClass(
-                color,
-              )} rounded-md`}
+                color
+              )} rounded-md cursor-pointer`}
+              onClick={() => handleCellClick(row, col)}
             />
           ) : (
             <div key={idx} />
           );
         })}
       </div>
+      {selectedCell && (
+        <div
+          style={{
+            position: "absolute",
+            left: selectedCell.x,
+            top: selectedCell.y - 50, // popup above the cell
+            zIndex: 1000,
+          }}
+        >
+          <div className="bg-white p-2 rounded shadow flex gap-2 border border-gray-300">
+            {COLORS.map((color) => (
+              <button
+                key={color}
+                className={`w-6 h-6 rounded-full border-2 ${getCubeColorClass(
+                  color
+                )}`}
+                onClick={() => handleColorSelect(color)}
+                aria-label={color}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex gap-2 mt-4">
         <button
           onClick={handleUndo}
@@ -129,37 +215,37 @@ export default function CubeViewer() {
             onClick={() => executeCommand(new LMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            L Move
+            L
           </button>
           <button
             onClick={() => executeCommand(new RMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            R Move
+            R
           </button>
           <button
             onClick={() => executeCommand(new FMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            F Move
+            F
           </button>
           <button
             onClick={() => executeCommand(new BMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            B Move
+            B
           </button>
           <button
             onClick={() => executeCommand(new UMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            U Move
+            U
           </button>
           <button
             onClick={() => executeCommand(new DMove())}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            D Move
+            D
           </button>
         </div>
         <div className="flex gap-2">
@@ -167,37 +253,37 @@ export default function CubeViewer() {
             onClick={() => executeCommand(new LMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            L&apos; Move
+            L&apos;
           </button>
           <button
             onClick={() => executeCommand(new RMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            R&apos; Move
+            R&apos;
           </button>
           <button
             onClick={() => executeCommand(new FMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            F&apos; Move
+            F&apos;
           </button>
           <button
             onClick={() => executeCommand(new BMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            B&apos; Move
+            B&apos;
           </button>
           <button
             onClick={() => executeCommand(new UMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            U&apos; Move
+            U&apos;
           </button>
           <button
             onClick={() => executeCommand(new DMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            D&apos; Move
+            D&apos;
           </button>
         </div>
         <div className="flex gap-2">
@@ -205,13 +291,13 @@ export default function CubeViewer() {
             onClick={() => executeCommand(new YMove(false))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            Y Move
+            Y
           </button>
           <button
             onClick={() => executeCommand(new XMove(false))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            X Move
+            X
           </button>
         </div>
         <div className="flex gap-2">
@@ -219,14 +305,14 @@ export default function CubeViewer() {
             onClick={() => executeCommand(new YMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            Y&apos; Move
+            Y&apos;
           </button>
 
           <button
             onClick={() => executeCommand(new XMove(true))}
             className="mt-8 px-4 py-2 bg-cube-blue text-white rounded shadow hover:bg-cube-blue/80"
           >
-            X&apos; Move
+            X&apos;
           </button>
         </div>
       </div>
