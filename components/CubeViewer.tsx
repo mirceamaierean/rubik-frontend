@@ -12,6 +12,7 @@ import { DMove } from "@/utils/commands/d";
 import { YMove } from "@/utils/commands/y";
 import { XMove } from "@/utils/commands/x";
 import AlgorithmControls from "./AlgorithmControls";
+import Cube3D from "./Cube3D";
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
 
@@ -37,7 +38,7 @@ const colorToChar: { [key: string]: string } = {
 
 function getFaceCell(
   row: number,
-  col: number
+  col: number,
 ): {
   face: keyof RubiksCube["faces"];
   faceRow: number;
@@ -76,6 +77,7 @@ export default function CubeViewer({
   const [selectedFace, setSelectedFace] = useState<
     keyof RubiksCube["faces"] | null
   >(null);
+  const [is3D, setIs3D] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const applyMoves = (moves: Move[]) => {
@@ -137,11 +139,29 @@ export default function CubeViewer({
     }
   };
 
+  const handle3DFaceClick = (face: keyof RubiksCube["faces"]) => {
+    const cubeState = JSON.parse(JSON.stringify(cube.faces)); // Deep copy
+    setTempCubeState(cubeState);
+    setSelectedFace(face);
+    setShowColorDialog(true);
+
+    // Initialize input values for the selected face only
+    const newInputValues: { [key: string]: string } = {};
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const key = `${face}-${i}-${j}`;
+        const color = cubeState[face][i][j];
+        newInputValues[key] = colorToChar[color] || "";
+      }
+    }
+    setInputValues(newInputValues);
+  };
+
   const handleInputChange = (
     face: keyof RubiksCube["faces"],
     row: number,
     col: number,
-    value: string
+    value: string,
   ) => {
     const key = `${face}-${row}-${col}`;
     const char = value.toLowerCase().slice(-1); // Take only the last character
@@ -180,7 +200,7 @@ export default function CubeViewer({
   const getInputValue = (
     face: keyof RubiksCube["faces"],
     row: number,
-    col: number
+    col: number,
   ): string => {
     const key = `${face}-${row}-${col}`;
     return inputValues[key] || "";
@@ -224,32 +244,46 @@ export default function CubeViewer({
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center py-8">
-      <div
-        ref={gridRef}
-        className="grid"
-        style={{
-          gridTemplateColumns: `repeat(${GRID_COLS}, 2.5rem)`,
-          gridTemplateRows: `repeat(${GRID_SIZE}, 2.5rem)`,
-          gap: "2px",
-        }}
-      >
-        {Array.from({ length: GRID_SIZE * GRID_COLS }).map((_, idx) => {
-          const row = Math.floor(idx / GRID_COLS);
-          const col = idx % GRID_COLS;
-          const color = getNetCellCurrent(row, col);
-          return color ? (
-            <div
-              key={idx}
-              className={`border border-black ${getCubeColorClass(
-                color
-              )} rounded-md cursor-pointer`}
-              onClick={() => handleCellClick(row, col)}
-            />
-          ) : (
-            <div key={idx} />
-          );
-        })}
+      {/* Toggle between 2D and 3D */}
+      <div className="mb-4">
+        <button
+          onClick={() => setIs3D(!is3D)}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Switch to {is3D ? "2D" : "3D"} View
+        </button>
       </div>
+
+      {is3D ? (
+        <Cube3D faces={cube.faces} onFaceClick={handle3DFaceClick} />
+      ) : (
+        <div
+          ref={gridRef}
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${GRID_COLS}, 2.5rem)`,
+            gridTemplateRows: `repeat(${GRID_SIZE}, 2.5rem)`,
+            gap: "2px",
+          }}
+        >
+          {Array.from({ length: GRID_SIZE * GRID_COLS }).map((_, idx) => {
+            const row = Math.floor(idx / GRID_COLS);
+            const col = idx % GRID_COLS;
+            const color = getNetCellCurrent(row, col);
+            return color ? (
+              <div
+                key={idx}
+                className={`border border-black ${getCubeColorClass(
+                  color,
+                )} rounded-md cursor-pointer`}
+                onClick={() => handleCellClick(row, col)}
+              />
+            ) : (
+              <div key={idx} />
+            );
+          })}
+        </div>
+      )}
 
       {/* Color Selection Dialog */}
       {showColorDialog && tempCubeState && selectedFace && (
@@ -290,7 +324,7 @@ export default function CubeViewer({
                           handleInputChange(selectedFace, row, col, value);
                         }}
                         className={`w-12 h-12 text-center text-lg font-bold border-2 border-gray-400 ${getCubeColorClass(
-                          color
+                          color,
                         )} rounded`}
                         maxLength={1}
                         style={{

@@ -19,17 +19,17 @@ const PhotoUploadForm: React.FC<{
 }> = ({ onCubeDetected }) => {
   const [images, setImages] = useState<(File | null)[]>(Array(6).fill(null));
   const [previews, setPreviews] = useState<(string | null)[]>(
-    Array(6).fill(null)
+    Array(6).fill(null),
   );
   const [isCameraOpen, setIsCameraOpen] = useState<number | null>(null); // index of face being captured
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    idx: number
+    idx: number,
   ) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -65,7 +65,7 @@ const PhotoUploadForm: React.FC<{
         0,
         0,
         canvasRef.current.width,
-        canvasRef.current.height
+        canvasRef.current.height,
       );
       canvasRef.current.toBlob((blob) => {
         if (blob) {
