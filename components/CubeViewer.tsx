@@ -13,6 +13,11 @@ import { YMove } from "@/utils/commands/y";
 import { XMove } from "@/utils/commands/x";
 import AlgorithmControls from "./AlgorithmControls";
 import Cube3D from "./Cube3D";
+import {
+  solveWhiteCross,
+  insertWhiteCorners,
+  solveMiddleEdge,
+} from "@/utils/solver";
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
 
@@ -196,6 +201,27 @@ export default function CubeViewer({
     setSelectedFace(null);
   };
 
+  const handleSolveWhiteCross = () => {
+    solveWhiteCross(cube);
+  };
+
+  const handleInsertWhiteCorners = () => {
+    const algorithm = insertWhiteCorners(cube);
+    console.log(algorithm);
+    // if (algorithm) {
+    // if (algorithm) {
+    //   executeCommand(algorithm);
+    // }
+  };
+
+  const handleSolveMiddleEdge = () => {
+    const algorithm = solveMiddleEdge(cube);
+    console.log("aici", algorithm);
+    // if (algorithm) {
+    //   executeCommand(algorithm);
+    // }
+  };
+
   // Get current input value for display
   const getInputValue = (
     face: keyof RubiksCube["faces"],
@@ -363,7 +389,7 @@ export default function CubeViewer({
       )}
 
       <div className="flex gap-2 mt-4">
-        <button
+        {/* <button
           onClick={handleUndo}
           className="px-4 py-2 bg-gray-400 text-white rounded shadow hover:bg-gray-500 disabled:opacity-50"
           disabled={undoStack.length === 0}
@@ -376,6 +402,24 @@ export default function CubeViewer({
           disabled={redoStack.length === 0}
         >
           Redo
+        </button> */}
+        <button
+          onClick={handleSolveWhiteCross}
+          className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
+        >
+          Solve White Cross
+        </button>
+        <button
+          onClick={handleInsertWhiteCorners}
+          className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
+        >
+          Insert White Corners
+        </button>
+        <button
+          onClick={handleSolveMiddleEdge}
+          className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
+        >
+          Solve Middle Edge
         </button>
       </div>
       <div>

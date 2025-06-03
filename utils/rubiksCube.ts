@@ -39,6 +39,54 @@ export class RubiksCube {
   clone(): RubiksCube {
     return new RubiksCube(this.faces);
   }
+
+  // getTopNeighborFace(face: keyof RubiksCube["faces"]) {
+  //   switch (face) {
+  //     case "U":
+  //       return "B";
+  //     case "D":
+  //       return "F";
+  //     default:
+  //       return "U";
+  //   }
+  // }
+
+  // getBottomNeighborFace(face: keyof RubiksCube["faces"]) {
+  //   switch (face) {
+  //     case "U":
+  //       return "F";
+  //     case "D":
+  //       return "B";
+  //     default:
+  //       return "D";
+  //   }
+  // }
+
+  // getLeftNeighborFace(face: keyof RubiksCube["faces"]) {
+  //   switch (face) {
+  //     case "L":
+  //       return "B";
+  //     case "B":
+  //       return "R";
+  //     case "R":
+  //       return "F";
+  //     default:
+  //       return "L";
+  //   }
+  // }
+
+  // getRightNeighborFace(face: keyof RubiksCube["faces"]) {
+  //   switch (face) {
+  //     case "L":
+  //       return "F";
+  //     case "R":
+  //       return "B";
+  //     case "B":
+  //       return "L";
+  //     default:
+  //       return "R";
+  //   }
+  // }
 }
 
 export function getCubeColorClass(color: string) {
