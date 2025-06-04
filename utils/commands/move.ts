@@ -8,4 +8,12 @@ export abstract class Move {
     this.prime = !this.prime;
     this.execute(cube);
   }
+
+  changePrime() {
+    this.prime = !this.prime;
+  }
+
+  abstract isOpposite(move: Move): boolean;
+
+  abstract isSame(move: Move): boolean;
 }

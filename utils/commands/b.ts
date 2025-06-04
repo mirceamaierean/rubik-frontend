@@ -57,4 +57,12 @@ export class BMove extends Move {
       }
     }
   }
+
+  isOpposite(move: Move): boolean {
+    return move instanceof BMove && this.prime !== move.prime;
+  }
+
+  isSame(move: Move): boolean {
+    return move instanceof BMove && this.prime === move.prime;
+  }
 }
