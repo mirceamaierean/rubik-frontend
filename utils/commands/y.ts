@@ -51,4 +51,12 @@ export class YMove extends Move {
       }
     }
   }
+
+  isOpposite(move: Move): boolean {
+    return move instanceof YMove && this.prime !== move.prime;
+  }
+
+  isSame(move: Move): boolean {
+    return move instanceof YMove && this.prime === move.prime;
+  }
 }

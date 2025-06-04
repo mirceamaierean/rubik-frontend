@@ -59,4 +59,12 @@ export class RMove extends Move {
       }
     }
   }
+
+  isOpposite(move: Move): boolean {
+    return move instanceof RMove && this.prime !== move.prime;
+  }
+
+  isSame(move: Move): boolean {
+    return move instanceof RMove && this.prime === move.prime;
+  }
 }

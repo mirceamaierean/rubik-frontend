@@ -52,4 +52,12 @@ export class XMove extends Move {
       }
     }
   }
+
+  isOpposite(move: Move): boolean {
+    return move instanceof XMove && this.prime !== move.prime;
+  }
+
+  isSame(move: Move): boolean {
+    return move instanceof XMove && this.prime === move.prime;
+  }
 }

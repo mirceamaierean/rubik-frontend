@@ -37,4 +37,12 @@ export class UMove extends Move {
       }
     }
   }
+
+  isOpposite(move: Move): boolean {
+    return move instanceof UMove && this.prime !== move.prime;
+  }
+
+  isSame(move: Move): boolean {
+    return move instanceof UMove && this.prime === move.prime;
+  }
 }

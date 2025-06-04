@@ -345,6 +345,23 @@ export const whiteCorners: Corner[] = [
     jFace3: 2,
   },
   {
+    face1: "F",
+    face2: "R",
+    face3: "D",
+    iFace1: 2,
+    jFace1: 2,
+    iFace2: 2,
+    jFace2: 0,
+    iFace3: 0,
+    jFace3: 2,
+    algorithm: new Algorithm([
+      new RMove(),
+      new UMove(),
+      new RMove(true),
+      new UMove(true),
+    ]),
+  },
+  {
     face1: "B",
     face2: "R",
     face3: "U",
@@ -480,6 +497,8 @@ export const middleEdges: Edge[] = [
       new FMove(true),
       new UMove(),
       new FMove(),
+      new UMove(),
+      new UMove(),
     ]),
   },
   {

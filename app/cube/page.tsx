@@ -6,7 +6,6 @@ import { RubiksCube } from "@/utils/rubiksCube";
 
 export default function CubePage() {
   const [cubeFaces, setCubeFaces] = useState(RubiksCube.solved().faces);
-  // Use a key that changes when cubeFaces changes, to force CubeViewer to reset
   const cubeKey = JSON.stringify(cubeFaces);
 
   return (
