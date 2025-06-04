@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { RubiksCube, getCubeColorClass } from "@/utils/rubiksCube";
 import { CubeColor } from "@/types/rubiksCube";
 import { Move } from "@/utils/commands/move";
@@ -13,6 +13,26 @@ import { Algorithm } from "@/utils/commands/algorithm";
 
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
+const CUBE_STORAGE_KEY = "rubiks-cube-state";
+
+// Helper functions for localStorage
+const saveCubeToStorage = (faces: RubiksCube["faces"]) => {
+  try {
+    localStorage.setItem(CUBE_STORAGE_KEY, JSON.stringify(faces));
+  } catch (error) {
+    console.warn("Failed to save cube state to localStorage:", error);
+  }
+};
+
+const loadCubeFromStorage = (): RubiksCube["faces"] | null => {
+  try {
+    const saved = localStorage.getItem(CUBE_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn("Failed to load cube state from localStorage:", error);
+    return null;
+  }
+};
 
 function getFaceCell(
   row: number,
@@ -44,7 +64,11 @@ export default function CubeViewer({
   faces: RubiksCube["faces"];
   onCubeChange?: (faces: RubiksCube["faces"]) => void;
 }) {
-  const [cube, setCube] = useState(() => new RubiksCube(faces));
+  // Initialize cube state from localStorage or props
+  const [cube, setCube] = useState(() => {
+    const savedFaces = loadCubeFromStorage();
+    return new RubiksCube(savedFaces || faces);
+  });
   const [showColorDialog, setShowColorDialog] = useState(false);
   const [tempCubeState, setTempCubeState] = useState<
     RubiksCube["faces"] | null
@@ -58,6 +82,23 @@ export default function CubeViewer({
     null,
   );
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Save cube state to localStorage whenever it changes
+  useEffect(() => {
+    saveCubeToStorage(cube.faces);
+  }, [cube]);
+
+  const resetCube = () => {
+    try {
+      localStorage.removeItem(CUBE_STORAGE_KEY);
+    } catch (error) {
+      console.warn("Failed to clear cube state from localStorage:", error);
+    }
+    const solvedCube = RubiksCube.solved();
+    setCube(solvedCube);
+    setCurrentAlgorithm(null);
+    if (onCubeChange) onCubeChange(solvedCube.faces);
+  };
 
   const executeCommand = (command: Move) => {
     const newCube = cube.clone();
@@ -175,6 +216,12 @@ export default function CubeViewer({
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Switch to {is3D ? "2D" : "3D"} View
+        </button>
+        <button
+          onClick={resetCube}
+          className="ml-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Reset Cube
         </button>
       </div>
 
