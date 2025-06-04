@@ -20,4 +20,8 @@ export class Algorithm extends Move {
   undo(cube: RubiksCube) {
     [...this.moves].reverse().forEach((move) => move.undo(cube));
   }
+
+  clone(): Algorithm {
+    return new Algorithm([...this.moves]);
+  }
 }

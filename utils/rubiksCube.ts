@@ -37,7 +37,15 @@ export class RubiksCube {
   }
 
   clone(): RubiksCube {
-    return new RubiksCube(this.faces);
+    const clonedFaces = {
+      U: this.faces.U.map((row) => [...row]),
+      D: this.faces.D.map((row) => [...row]),
+      F: this.faces.F.map((row) => [...row]),
+      B: this.faces.B.map((row) => [...row]),
+      L: this.faces.L.map((row) => [...row]),
+      R: this.faces.R.map((row) => [...row]),
+    };
+    return new RubiksCube(clonedFaces);
   }
 
   // getTopNeighborFace(face: keyof RubiksCube["faces"]) {
