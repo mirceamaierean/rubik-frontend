@@ -27,18 +27,18 @@ describe("RubiksCube", () => {
 
   it("should set a face to a new color", () => {
     const cube = new RubiksCube();
-    cube.setFace("U", "red");
+    cube.paintFace("U", "red");
     expect(cube.faces.U.flat().every((c) => c === "red")).toBe(true);
   });
 
   it("should clone the cube correctly", () => {
     const cube = new RubiksCube();
-    cube.setFace("F", "blue");
+    cube.paintFace("F", "blue");
     const clone = cube.clone();
     expect(clone).not.toBe(cube);
     expect(clone.faces.F.flat().every((c) => c === "blue")).toBe(true);
     // Changing the clone should not affect the original
-    clone.setFace("F", "green");
+    clone.paintFace("F", "green");
     expect(clone.faces.F.flat().every((c) => c === "green")).toBe(true);
     expect(cube.faces.F.flat().every((c) => c === "blue")).toBe(true);
   });

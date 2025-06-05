@@ -1,7 +1,7 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { RubiksCube, getCubeColorClass } from "@/utils/rubiksCube";
-import { CubeColor } from "@/types/rubiksCube";
+import { CubeColor, Face } from "@/types/rubiksCube";
 import { Move } from "@/utils/commands/move";
 import AlgorithmControls from "./AlgorithmControls";
 import Cube3D from "./Cube3D";
@@ -9,30 +9,12 @@ import ColorDialog, { charToColor, colorToChar } from "./ColorDialog";
 import SolverControls from "./SolverControls";
 import ManualMoveControls from "./ManualMoveControls";
 import AlgorithmDisplay from "./AlgorithmDisplay";
+import ImageUploadModal from "./ImageUploadModal";
 import { Algorithm } from "@/utils/commands/algorithm";
+import { useAlgorithmStore } from "@/stores/algorithmStore";
 
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
-const CUBE_STORAGE_KEY = "rubiks-cube-state";
-
-// Helper functions for localStorage
-const saveCubeToStorage = (faces: RubiksCube["faces"]) => {
-  try {
-    localStorage.setItem(CUBE_STORAGE_KEY, JSON.stringify(faces));
-  } catch (error) {
-    console.warn("Failed to save cube state to localStorage:", error);
-  }
-};
-
-const loadCubeFromStorage = (): RubiksCube["faces"] | null => {
-  try {
-    const saved = localStorage.getItem(CUBE_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : null;
-  } catch (error) {
-    console.warn("Failed to load cube state from localStorage:", error);
-    return null;
-  }
-};
 
 function getFaceCell(
   row: number,
@@ -64,11 +46,8 @@ export default function CubeViewer({
   faces: RubiksCube["faces"];
   onCubeChange?: (faces: RubiksCube["faces"]) => void;
 }) {
-  // Initialize cube state from localStorage or props
-  const [cube, setCube] = useState(() => {
-    const savedFaces = loadCubeFromStorage();
-    return new RubiksCube(savedFaces || faces);
-  });
+  const [cube, setCube] = useState(() => new RubiksCube(faces));
+
   const [showColorDialog, setShowColorDialog] = useState(false);
   const [tempCubeState, setTempCubeState] = useState<
     RubiksCube["faces"] | null
@@ -77,26 +56,23 @@ export default function CubeViewer({
   const [selectedFace, setSelectedFace] = useState<
     keyof RubiksCube["faces"] | null
   >(null);
-  const [is3D, setIs3D] = useState(false);
-  const [currentAlgorithm, setCurrentAlgorithm] = useState<Algorithm | null>(
-    null,
-  );
+
+  // Use Zustand store for algorithm and view state
+  const {
+    currentAlgorithm,
+    setCurrentAlgorithm,
+    clearAlgorithm,
+    is3D,
+    toggleView,
+  } = useAlgorithmStore();
+
+  const [showImageUpload, setShowImageUpload] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // Save cube state to localStorage whenever it changes
-  useEffect(() => {
-    saveCubeToStorage(cube.faces);
-  }, [cube]);
-
   const resetCube = () => {
-    try {
-      localStorage.removeItem(CUBE_STORAGE_KEY);
-    } catch (error) {
-      console.warn("Failed to clear cube state from localStorage:", error);
-    }
     const solvedCube = RubiksCube.solved();
     setCube(solvedCube);
-    setCurrentAlgorithm(null);
+    clearAlgorithm();
     if (onCubeChange) onCubeChange(solvedCube.faces);
   };
 
@@ -208,11 +184,29 @@ export default function CubeViewer({
     return null;
   }
 
+  const handleCubeDetected = (faces: Array<Array<Array<string>>>) => {
+    const newCube = new RubiksCube();
+
+    for (const face of faces) {
+      const centerColor = face[1][1];
+      const faceName = cube.findFaceWithCenterColor(centerColor as CubeColor);
+
+      newCube.setFace(faceName, face as Face);
+    }
+
+    setCube(newCube);
+    if (onCubeChange) onCubeChange(newCube.faces);
+  };
+
+  const handleAlgorithmGenerated = (algorithm: Algorithm | null) => {
+    setCurrentAlgorithm(algorithm);
+  };
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center py-8">
       <div className="mb-4">
         <button
-          onClick={() => setIs3D(!is3D)}
+          onClick={toggleView}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Switch to {is3D ? "2D" : "3D"} View
@@ -222,6 +216,12 @@ export default function CubeViewer({
           className="ml-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
         >
           Reset Cube
+        </button>
+        <button
+          onClick={() => setShowImageUpload(true)}
+          className="ml-2 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+        >
+          Upload Images
         </button>
       </div>
 
@@ -269,16 +269,19 @@ export default function CubeViewer({
       <SolverControls
         cube={cube}
         onExecuteCommand={executeCommand}
-        onAlgorithmGenerated={setCurrentAlgorithm}
+        onAlgorithmGenerated={handleAlgorithmGenerated}
       />
 
       <ManualMoveControls onExecuteCommand={executeCommand} />
 
       <AlgorithmControls onAlgorithm={executeCommand} />
 
-      <AlgorithmDisplay
-        algorithm={currentAlgorithm}
-        title="Generated Algorithm"
+      <AlgorithmDisplay title="Generated Algorithm" />
+
+      <ImageUploadModal
+        isOpen={showImageUpload}
+        onClose={() => setShowImageUpload(false)}
+        onCubeDetected={handleCubeDetected}
       />
     </div>
   );
