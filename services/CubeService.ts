@@ -11,14 +11,13 @@ export const detectColors = async (images: File[]) => {
     body: formData,
   });
   const { results } = await response.json();
-  console.log(results);
 
-  return {
-    U: results[0].grid,
-    D: results[1].grid,
-    F: results[2].grid,
-    B: results[3].grid,
-    L: results[4].grid,
-    R: results[5].grid,
-  };
+  return [
+    results[0].grid,
+    results[1].grid,
+    results[2].grid,
+    results[3].grid,
+    results[4].grid,
+    results[5].grid,
+  ];
 };

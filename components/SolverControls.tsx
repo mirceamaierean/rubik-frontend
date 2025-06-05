@@ -35,8 +35,6 @@ export default function SolverControls({
     const algorithm = insertWhiteCorners(cube);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
-      console.log(algorithm);
-      // Uncomment to execute:
       onExecuteCommand(algorithm);
     }
   };
@@ -45,8 +43,6 @@ export default function SolverControls({
     const algorithm = solveMiddleEdge(cube);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
-      console.log("aici", algorithm);
-      // Uncomment to execute:
       onExecuteCommand(algorithm);
     }
   };
@@ -55,15 +51,12 @@ export default function SolverControls({
     const algorithm = makeTopCross(cube);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
-      console.log("top cross", algorithm);
-      // Uncomment to execute:
       onExecuteCommand(algorithm);
     }
   };
 
   const handleSolveTopCorners = () => {
     const algorithm = solveTopCorners(cube);
-    console.log("solve top corners", algorithm);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
       onExecuteCommand(algorithm);
@@ -72,7 +65,6 @@ export default function SolverControls({
 
   const handlePermuteTopCorners = () => {
     const algorithm = permuteTopCorners(cube);
-    console.log("permute top corners", algorithm);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
       onExecuteCommand(algorithm);
@@ -81,7 +73,6 @@ export default function SolverControls({
 
   const handleSolveLastLayer = () => {
     const algorithm = permuteTopEdges(cube);
-    console.log("solve last layer", algorithm);
     if (algorithm) {
       onAlgorithmGenerated(algorithm);
       onExecuteCommand(algorithm);

@@ -1,15 +1,15 @@
 "use client";
-import { Algorithm } from "@/utils/commands/algorithm";
+import { useAlgorithmStore } from "@/stores/algorithmStore";
 
 interface AlgorithmDisplayProps {
-  algorithm: Algorithm | null;
   title?: string;
 }
 
 export default function AlgorithmDisplay({
-  algorithm,
   title = "Algorithm",
 }: AlgorithmDisplayProps) {
+  const { currentAlgorithm: algorithm } = useAlgorithmStore();
+
   if (!algorithm) return null;
 
   return (

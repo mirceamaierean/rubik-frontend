@@ -3,7 +3,6 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { CameraIcon, XIcon } from "@heroicons/react/outline";
 import { detectColors } from "@/services/CubeService";
-import { RubiksCube } from "@/utils/rubiksCube";
 
 const FACE_LABELS = [
   "Up (U)",
@@ -15,7 +14,7 @@ const FACE_LABELS = [
 ];
 
 const PhotoUploadForm: React.FC<{
-  onCubeDetected: (faces: RubiksCube["faces"]) => void;
+  onCubeDetected: (faces: Array<Array<Array<string>>>) => void;
 }> = ({ onCubeDetected }) => {
   const [images, setImages] = useState<(File | null)[]>(Array(6).fill(null));
   const [previews, setPreviews] = useState<(string | null)[]>(

@@ -32,8 +32,31 @@ export class RubiksCube {
     return new RubiksCube();
   }
 
-  setFace(face: keyof RubiksCube["faces"], color: CubeColor) {
+  paintFace(face: keyof RubiksCube["faces"], color: CubeColor) {
     this.faces[face] = RubiksCube.createFace(color);
+  }
+
+  setFace(face: keyof RubiksCube["faces"], faceData: Face) {
+    this.faces[face] = faceData;
+  }
+
+  findFaceWithCenterColor(color: CubeColor): keyof RubiksCube["faces"] {
+    if (this.faces.U[1][1] === color) {
+      return "U";
+    }
+    if (this.faces.D[1][1] === color) {
+      return "D";
+    }
+    if (this.faces.F[1][1] === color) {
+      return "F";
+    }
+    if (this.faces.B[1][1] === color) {
+      return "B";
+    }
+    if (this.faces.L[1][1] === color) {
+      return "L";
+    }
+    return "R";
   }
 
   clone(): RubiksCube {

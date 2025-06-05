@@ -21,7 +21,6 @@ export function solveWhiteCross(cube: RubiksCube) {
         ? edge.algorithm.clone()
         : new Algorithm([]);
       algorithm.addMove(new YMove());
-      console.log("solve white cross", algorithm);
       return algorithm.clean();
     }
   }
@@ -39,7 +38,6 @@ function bringWhiteCorner(cube: RubiksCube) {
   }
 
   const rightColor = cube.faces.R[1][1];
-  console.log(frontColor, rightColor);
 
   for (const corner of whiteCorners) {
     const colors = [
@@ -52,7 +50,6 @@ function bringWhiteCorner(cube: RubiksCube) {
       checkColor(colors, frontColor) &&
       checkColor(colors, rightColor)
     ) {
-      console.log(corner);
       // Clone the algorithm to avoid modifying the original
       if (corner.algorithm) {
         return corner.algorithm.clone();
@@ -102,7 +99,6 @@ export function bringMiddleEdge(cube: RubiksCube) {
       cube.faces[edge.face2][edge.iFace2][edge.jFace2],
     ];
     if (checkColor(colors, frontColor) && checkColor(colors, rightColor)) {
-      console.log(edge);
       return edge.algorithm ? edge.algorithm.clone() : new Algorithm([]);
     }
   }
