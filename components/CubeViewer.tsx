@@ -1,17 +1,10 @@
 "use client";
 import { useState, useRef } from "react";
 import { RubiksCube, getCubeColorClass } from "@/utils/rubiksCube";
-import { CubeColor, Face } from "@/types/rubiksCube";
-import { Move } from "@/utils/commands/move";
-import AlgorithmControls from "./AlgorithmControls";
+import { CubeColor } from "@/types/rubiksCube";
 import Cube3D from "./Cube3D";
 import ColorDialog, { charToColor, colorToChar } from "./ColorDialog";
-import SolverControls from "./SolverControls";
-import ManualMoveControls from "./ManualMoveControls";
-import AlgorithmDisplay from "./AlgorithmDisplay";
-import ImageUploadModal from "./ImageUploadModal";
-import { Algorithm } from "@/utils/commands/algorithm";
-import { useAlgorithmStore } from "@/stores/algorithmStore";
+import { HighlightedCubelet } from "@/utils/solver";
 
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
@@ -42,9 +35,15 @@ function getFaceCell(
 export default function CubeViewer({
   faces,
   onCubeChange,
+  is3D,
+  onToggleView,
+  highlightedCubelets = [],
 }: {
   faces: RubiksCube["faces"];
   onCubeChange?: (faces: RubiksCube["faces"]) => void;
+  is3D: boolean;
+  onToggleView: () => void;
+  highlightedCubelets?: HighlightedCubelet[];
 }) {
   const [cube, setCube] = useState(() => new RubiksCube(faces));
 
@@ -57,30 +56,18 @@ export default function CubeViewer({
     keyof RubiksCube["faces"] | null
   >(null);
 
-  // Use Zustand store for algorithm and view state
-  const {
-    currentAlgorithm,
-    setCurrentAlgorithm,
-    clearAlgorithm,
-    is3D,
-    toggleView,
-  } = useAlgorithmStore();
-
-  const [showImageUpload, setShowImageUpload] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const resetCube = () => {
-    const solvedCube = RubiksCube.solved();
-    setCube(solvedCube);
-    clearAlgorithm();
-    if (onCubeChange) onCubeChange(solvedCube.faces);
-  };
-
-  const executeCommand = (command: Move) => {
-    const newCube = cube.clone();
-    command.execute(newCube);
-    setCube(newCube);
-    if (onCubeChange) onCubeChange(newCube.faces);
+  // Helper function to check if a cubelet should be highlighted
+  const isCubeletHighlighted = (
+    face: keyof RubiksCube["faces"],
+    row: number,
+    col: number,
+  ): boolean => {
+    return highlightedCubelets.some(
+      (cubelet) =>
+        cubelet.face === face && cubelet.row === row && cubelet.col === col,
+    );
   };
 
   const handleCellClick = (row: number, col: number) => {
@@ -184,49 +171,21 @@ export default function CubeViewer({
     return null;
   }
 
-  const handleCubeDetected = (faces: Array<Array<Array<string>>>) => {
-    const newCube = new RubiksCube();
-
-    for (const face of faces) {
-      const centerColor = face[1][1];
-      const faceName = cube.findFaceWithCenterColor(centerColor as CubeColor);
-
-      newCube.setFace(faceName, face as Face);
-    }
-
-    setCube(newCube);
-    if (onCubeChange) onCubeChange(newCube.faces);
-  };
-
-  const handleAlgorithmGenerated = (algorithm: Algorithm | null) => {
-    setCurrentAlgorithm(algorithm);
-  };
-
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center py-8">
+    <div className="flex flex-col items-center justify-center py-8">
       <div className="mb-4">
         <button
-          onClick={toggleView}
+          onClick={onToggleView}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Switch to {is3D ? "2D" : "3D"} View
         </button>
-        <button
-          onClick={resetCube}
-          className="ml-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Reset Cube
-        </button>
-        <button
-          onClick={() => setShowImageUpload(true)}
-          className="ml-2 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-        >
-          Upload Images
-        </button>
       </div>
 
       {is3D ? (
-        <Cube3D faces={cube.faces} onFaceClick={handle3DFaceClick} />
+        <div className="w-96 h-96 flex items-center justify-center overflow-hidden rounded-lg border border-gray-600">
+          <Cube3D faces={cube.faces} onFaceClick={handle3DFaceClick} />
+        </div>
       ) : (
         <div
           ref={gridRef}
@@ -241,12 +200,23 @@ export default function CubeViewer({
             const row = Math.floor(idx / GRID_COLS);
             const col = idx % GRID_COLS;
             const color = getNetCellCurrent(row, col);
+            const cell = getFaceCell(row, col);
+
+            // Check if this cubelet should be highlighted
+            const isHighlighted = cell
+              ? isCubeletHighlighted(cell.face, cell.faceRow, cell.faceCol)
+              : false;
+
             return color ? (
               <div
                 key={idx}
                 className={`border border-black ${getCubeColorClass(
                   color,
-                )} rounded-md cursor-pointer`}
+                )} rounded-md cursor-pointer relative ${
+                  isHighlighted
+                    ? "ring-4 ring-yellow-400 ring-opacity-80 shadow-lg shadow-yellow-400/50 animate-pulse"
+                    : ""
+                }`}
                 onClick={() => handleCellClick(row, col)}
               />
             ) : (
@@ -264,24 +234,6 @@ export default function CubeViewer({
         onInputChange={handleInputChange}
         onApply={handleApplyChanges}
         onClose={handleDialogClose}
-      />
-
-      <SolverControls
-        cube={cube}
-        onExecuteCommand={executeCommand}
-        onAlgorithmGenerated={handleAlgorithmGenerated}
-      />
-
-      <ManualMoveControls onExecuteCommand={executeCommand} />
-
-      <AlgorithmControls onAlgorithm={executeCommand} />
-
-      <AlgorithmDisplay title="Generated Algorithm" />
-
-      <ImageUploadModal
-        isOpen={showImageUpload}
-        onClose={() => setShowImageUpload(false)}
-        onCubeDetected={handleCubeDetected}
       />
     </div>
   );

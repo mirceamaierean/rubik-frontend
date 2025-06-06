@@ -20,11 +20,10 @@ function Cubelet({
     const faceIndex = event.faceIndex;
     if (faceIndex === undefined || faceIndex === null) return;
 
-    const materialIndex = Math.floor(faceIndex / 2); // Each face has 2 triangles
+    const materialIndex = Math.floor(faceIndex / 2);
 
     const [x, y, z] = position;
 
-    // Map material index to face and check if this cubelet has that face visible
     let clickedFace: keyof RubiksCube["faces"] | null = null;
 
     switch (materialIndex) {

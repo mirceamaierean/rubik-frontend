@@ -71,53 +71,34 @@ export class RubiksCube {
     return new RubiksCube(clonedFaces);
   }
 
-  // getTopNeighborFace(face: keyof RubiksCube["faces"]) {
-  //   switch (face) {
-  //     case "U":
-  //       return "B";
-  //     case "D":
-  //       return "F";
-  //     default:
-  //       return "U";
-  //   }
-  // }
+  getFaceForKociemba(face: Face, colorMap: Record<CubeColor, string>): string {
+    return face
+      .map((row) => row.map((color) => colorMap[color]).join(""))
+      .join("");
+  }
 
-  // getBottomNeighborFace(face: keyof RubiksCube["faces"]) {
-  //   switch (face) {
-  //     case "U":
-  //       return "F";
-  //     case "D":
-  //       return "B";
-  //     default:
-  //       return "D";
-  //   }
-  // }
+  getKociembaRepresentation(): string {
+    // A cube is defined by its cube definition string.
+    // A solved cube has the string 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB'.
+    const colorMap = {
+      yellow: "U",
+      white: "D",
+      red: "F",
+      orange: "B",
+      green: "R",
+      blue: "L",
+    };
 
-  // getLeftNeighborFace(face: keyof RubiksCube["faces"]) {
-  //   switch (face) {
-  //     case "L":
-  //       return "B";
-  //     case "B":
-  //       return "R";
-  //     case "R":
-  //       return "F";
-  //     default:
-  //       return "L";
-  //   }
-  // }
+    let kociembaRepresentation = "";
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.U, colorMap);
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.R, colorMap);
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.F, colorMap);
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.D, colorMap);
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.L, colorMap);
+    kociembaRepresentation += this.getFaceForKociemba(this.faces.B, colorMap);
 
-  // getRightNeighborFace(face: keyof RubiksCube["faces"]) {
-  //   switch (face) {
-  //     case "L":
-  //       return "F";
-  //     case "R":
-  //       return "B";
-  //     case "B":
-  //       return "L";
-  //     default:
-  //       return "R";
-  //   }
-  // }
+    return kociembaRepresentation;
+  }
 }
 
 export function getCubeColorClass(color: string) {
