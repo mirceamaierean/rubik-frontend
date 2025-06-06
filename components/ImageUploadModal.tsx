@@ -38,6 +38,8 @@ export default function ImageUploadModal({
       newPreviews[idx] = URL.createObjectURL(file);
       setImages(newImages);
       setPreviews(newPreviews);
+    } else {
+      console.warn("📁 No file selected");
     }
   };
 
@@ -95,6 +97,8 @@ export default function ImageUploadModal({
           setImages(newImages);
           setPreviews(newPreviews);
           stopCamera();
+        } else {
+          console.error("📸 Failed to create blob from canvas");
         }
       }, "image/jpeg");
     }
@@ -132,6 +136,13 @@ export default function ImageUploadModal({
       } finally {
         setIsLoading(false);
       }
+    } else {
+      console.warn("⚠️ Not all images are present");
+      images.forEach((img, idx) => {
+        if (img === null) {
+          console.warn(`⚠️ Image ${idx} is missing`);
+        }
+      });
     }
   };
 

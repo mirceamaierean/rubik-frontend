@@ -9,7 +9,19 @@ import { LMove } from "./commands/l";
 import { DMove } from "./commands/d";
 import { BMove } from "./commands/b";
 
-export function solveWhiteCross(cube: RubiksCube) {
+export interface HighlightedCubelet {
+  face: keyof RubiksCube["faces"];
+  row: number;
+  col: number;
+}
+
+export interface SolverResult {
+  algorithm: Algorithm;
+  highlightedCubelets?: HighlightedCubelet[];
+  description?: string;
+}
+
+export function solveWhiteCross(cube: RubiksCube): SolverResult {
   const frontColor = cube.faces.F[1][1];
 
   for (const edge of whiteEdges) {
@@ -21,9 +33,22 @@ export function solveWhiteCross(cube: RubiksCube) {
         ? edge.algorithm.clone()
         : new Algorithm([]);
       algorithm.addMove(new YMove());
-      return algorithm.clean();
+
+      // Highlight the edge pieces being worked on
+      const highlightedCubelets: HighlightedCubelet[] = [
+        { face: edge.face1, row: edge.iFace1, col: edge.jFace1 },
+        { face: edge.face2, row: edge.iFace2, col: edge.jFace2 },
+      ];
+
+      return {
+        algorithm: algorithm.clean(),
+        highlightedCubelets,
+        description: `Moving ${frontColor}-white edge from ${edge.face1}[${edge.iFace1}][${edge.jFace1}] position`,
+      };
     }
   }
+
+  return { algorithm: new Algorithm([]) };
 }
 
 export function checkColor(colors: string[], color: string) {
@@ -52,16 +77,35 @@ function bringWhiteCorner(cube: RubiksCube) {
     ) {
       // Clone the algorithm to avoid modifying the original
       if (corner.algorithm) {
-        return corner.algorithm.clone();
+        return { algorithm: corner.algorithm.clone(), corner };
       }
-      return new Algorithm([]);
+      return { algorithm: new Algorithm([]), corner };
     }
   }
+  return null;
 }
 
-export function insertWhiteCorners(cube: RubiksCube) {
-  let algorithm = bringWhiteCorner(cube);
-  if (algorithm) {
+export function insertWhiteCorners(cube: RubiksCube): SolverResult {
+  const result = bringWhiteCorner(cube);
+  let algorithm: Algorithm;
+  let highlightedCubelets: HighlightedCubelet[] = [];
+  let description = "";
+
+  if (result) {
+    algorithm = result.algorithm;
+    const corner = result.corner;
+
+    // Highlight the corner pieces being worked on
+    highlightedCubelets = [
+      { face: corner.face1, row: corner.iFace1, col: corner.jFace1 },
+      { face: corner.face2, row: corner.iFace2, col: corner.jFace2 },
+      { face: corner.face3, row: corner.iFace3, col: corner.jFace3 },
+    ];
+
+    const frontColor = cube.faces.F[1][1];
+    const rightColor = cube.faces.R[1][1];
+    description = `Inserting white-${frontColor}-${rightColor} corner from ${corner.face1}[${corner.iFace1}][${corner.jFace1}] position`;
+
     const newCube = cube.clone();
     algorithm?.execute(newCube);
 
@@ -83,10 +127,17 @@ export function insertWhiteCorners(cube: RubiksCube) {
       algorithm.addMove(new UMove());
       algorithm.addMove(new RMove(true));
     }
-  } else algorithm = new Algorithm([]);
+  } else {
+    algorithm = new Algorithm([]);
+  }
 
   algorithm.addMove(new YMove());
-  return algorithm.clean();
+
+  return {
+    algorithm: algorithm.clean(),
+    highlightedCubelets,
+    description,
+  };
 }
 
 export function bringMiddleEdge(cube: RubiksCube) {
@@ -99,20 +150,39 @@ export function bringMiddleEdge(cube: RubiksCube) {
       cube.faces[edge.face2][edge.iFace2][edge.jFace2],
     ];
     if (checkColor(colors, frontColor) && checkColor(colors, rightColor)) {
-      return edge.algorithm ? edge.algorithm.clone() : new Algorithm([]);
+      return {
+        algorithm: edge.algorithm ? edge.algorithm.clone() : new Algorithm([]),
+        edge,
+      };
     }
   }
-  return new Algorithm([]);
+  return { algorithm: new Algorithm([]), edge: null };
 }
 
-export function solveMiddleEdge(cube: RubiksCube) {
+export function solveMiddleEdge(cube: RubiksCube): SolverResult {
   const frontColor = cube.faces.F[1][1];
   const rightColor = cube.faces.R[1][1];
 
-  if (frontColor === cube.faces.F[1][2] && rightColor === cube.faces.R[1][0])
-    return new Algorithm([new YMove()]);
+  if (frontColor === cube.faces.F[1][2] && rightColor === cube.faces.R[1][0]) {
+    return { algorithm: new Algorithm([new YMove()]) };
+  }
 
-  const algorithm = bringMiddleEdge(cube);
+  const result = bringMiddleEdge(cube);
+  const algorithm = result.algorithm;
+  let highlightedCubelets: HighlightedCubelet[] = [];
+  let description = "";
+
+  if (result.edge) {
+    const edge = result.edge;
+    highlightedCubelets = [
+      { face: edge.face1, row: edge.iFace1, col: edge.jFace1 },
+      { face: edge.face2, row: edge.iFace2, col: edge.jFace2 },
+    ];
+    description = `Solving ${frontColor}-${rightColor} middle edge from ${
+      edge.face1
+    }[${edge.iFace1 + 1}][${edge.jFace1 + 1}] position`;
+  }
+
   const newCube = cube.clone();
   algorithm.execute(newCube);
 
@@ -129,8 +199,14 @@ export function solveMiddleEdge(cube: RubiksCube) {
       new UMove(true),
       new FMove(true),
     ]);
-    return algorithm.clean();
+
+    return {
+      algorithm: algorithm.clean(),
+      highlightedCubelets,
+      description,
+    };
   }
+
   algorithm.addMoves([
     new UMove(),
     new RMove(),
@@ -143,7 +219,11 @@ export function solveMiddleEdge(cube: RubiksCube) {
     new YMove(),
   ]);
 
-  return algorithm.clean();
+  return {
+    algorithm: algorithm.clean(),
+    highlightedCubelets,
+    description,
+  };
 }
 
 export function makeTopCross(cube: RubiksCube) {
