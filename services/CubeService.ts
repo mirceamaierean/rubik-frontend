@@ -71,12 +71,12 @@ export const getFastestSolution = async (cubeString: string) => {
   const response = await fetch(`/api/kociemba?cubeString=${cubeString}`);
   const { solution } = await response.json();
 
-  console.log(solution);
   // solution returns a string of moves, separate by spaces
   // each move is a single character, followed by a number
   const moves = solution.split(" ");
+  // remove the last move, which is the corresponding code from the prunning table
   moves.pop();
-  console.log(moves);
+  
   const algorithm = new Algorithm([]);
   for (const move of moves) {
     const moveArray = await generateMove(move[0], parseInt(move[1]));
