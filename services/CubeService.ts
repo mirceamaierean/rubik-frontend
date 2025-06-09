@@ -11,7 +11,9 @@ export const detectColors = async (images: File[]) => {
   const formData = new FormData();
   images.forEach((file, idx) => {
     if (file) {
-      formData.append("images", file, file.name || `face${idx + 1}.jpg`);
+      // rename the file to face1.jpg, face2.jpg, etc.
+      const newFileName = `face${idx + 1}.jpg`;
+      formData.append("images", file, newFileName);
     }
   });
 
@@ -76,7 +78,7 @@ export const getFastestSolution = async (cubeString: string) => {
   const moves = solution.split(" ");
   // remove the last move, which is the corresponding code from the prunning table
   moves.pop();
-  
+
   const algorithm = new Algorithm([]);
   for (const move of moves) {
     const moveArray = await generateMove(move[0], parseInt(move[1]));

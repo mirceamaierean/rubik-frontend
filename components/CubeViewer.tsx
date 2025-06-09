@@ -5,13 +5,14 @@ import { CubeColor } from "@/types/rubiksCube";
 import Cube3D from "./Cube3D";
 import ColorDialog, { charToColor, colorToChar } from "./ColorDialog";
 import { HighlightedCubelet } from "@/utils/solver";
+import ViewToggle from "./ViewToggle";
 
 const GRID_SIZE = 9;
 const GRID_COLS = 12;
 
 function getFaceCell(
   row: number,
-  col: number,
+  col: number
 ): {
   face: keyof RubiksCube["faces"];
   faceRow: number;
@@ -62,11 +63,11 @@ export default function CubeViewer({
   const isCubeletHighlighted = (
     face: keyof RubiksCube["faces"],
     row: number,
-    col: number,
+    col: number
   ): boolean => {
     return highlightedCubelets.some(
       (cubelet) =>
-        cubelet.face === face && cubelet.row === row && cubelet.col === col,
+        cubelet.face === face && cubelet.row === row && cubelet.col === col
     );
   };
 
@@ -113,7 +114,7 @@ export default function CubeViewer({
     face: keyof RubiksCube["faces"],
     row: number,
     col: number,
-    value: string,
+    value: string
   ) => {
     const key = `${face}-${row}-${col}`;
     const char = value.toLowerCase().slice(-1); // Take only the last character
@@ -173,14 +174,7 @@ export default function CubeViewer({
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <div className="mb-4">
-        <button
-          onClick={onToggleView}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Switch to {is3D ? "2D" : "3D"} View
-        </button>
-      </div>
+      <ViewToggle is3D={is3D} onToggle={onToggleView} />
 
       {is3D ? (
         <div className="w-96 h-96 flex items-center justify-center overflow-hidden rounded-lg border border-gray-600">
@@ -211,7 +205,7 @@ export default function CubeViewer({
               <div
                 key={idx}
                 className={`border border-black ${getCubeColorClass(
-                  color,
+                  color
                 )} rounded-md cursor-pointer relative ${
                   isHighlighted
                     ? "ring-4 ring-yellow-400 ring-opacity-80 shadow-lg shadow-yellow-400/50 animate-pulse"

@@ -7,7 +7,7 @@ import { RubiksCube } from "./rubiksCube";
 import { Algorithm } from "./commands/algorithm";
 import { YMove } from "./commands/y";
 
-type Edge = {
+export type Edge = {
   face1: keyof RubiksCube["faces"];
   face2: keyof RubiksCube["faces"];
   iFace1: number;
@@ -517,6 +517,8 @@ export const middleEdges: Edge[] = [
       new FMove(),
       new UMove(true),
       new FMove(true),
+      new UMove(),
+      new UMove(),
     ]),
   },
   {
@@ -528,14 +530,17 @@ export const middleEdges: Edge[] = [
     jFace2: 2,
     algorithm: new Algorithm([
       new YMove(),
+
       new UMove(),
       new RMove(),
       new UMove(true),
       new RMove(true),
+
       new UMove(true),
       new FMove(true),
       new UMove(),
       new FMove(),
+
       new UMove(true),
       new YMove(true),
     ]),
@@ -553,10 +558,12 @@ export const middleEdges: Edge[] = [
       new LMove(true),
       new UMove(),
       new LMove(),
+
       new UMove(),
       new FMove(),
       new UMove(true),
       new FMove(true),
+
       new UMove(),
       new YMove(),
     ]),
