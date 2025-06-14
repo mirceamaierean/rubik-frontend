@@ -124,20 +124,20 @@ function getCubeletColors(
   // Left face (x = -1) - looking straight at it (from the left side)
   if (x === -1) {
     const row = 1 - y; // y=1 (top) -> row=0, y=-1 (bottom) -> row=2
-    const col = 1 + z;  
+    const col = 1 + z;
     colors.left = faces.L[row][col];
   }
 
   // Top face (y = 1) - looking down at it
   if (y === 1) {
-    const row = 1 + z; 
+    const row = 1 + z;
     const col = 1 + x; // x=-1 (left when looking down) -> col=0, x=1 (right when looking down) -> col=2
     colors.top = faces.U[row][col];
   }
 
   // Bottom face (y = -1) - looking up at it
   if (y === -1) {
-    const row = 1 - z; 
+    const row = 1 - z;
     const col = 1 + x; // x=-1 (left when looking up) -> col=0, x=1 (right when looking up) -> col=2
     colors.bottom = faces.D[row][col];
   }

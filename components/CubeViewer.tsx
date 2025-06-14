@@ -12,7 +12,7 @@ const GRID_COLS = 12;
 
 function getFaceCell(
   row: number,
-  col: number
+  col: number,
 ): {
   face: keyof RubiksCube["faces"];
   faceRow: number;
@@ -63,11 +63,11 @@ export default function CubeViewer({
   const isCubeletHighlighted = (
     face: keyof RubiksCube["faces"],
     row: number,
-    col: number
+    col: number,
   ): boolean => {
     return highlightedCubelets.some(
       (cubelet) =>
-        cubelet.face === face && cubelet.row === row && cubelet.col === col
+        cubelet.face === face && cubelet.row === row && cubelet.col === col,
     );
   };
 
@@ -114,7 +114,7 @@ export default function CubeViewer({
     face: keyof RubiksCube["faces"],
     row: number,
     col: number,
-    value: string
+    value: string,
   ) => {
     const key = `${face}-${row}-${col}`;
     const char = value.toLowerCase().slice(-1); // Take only the last character
@@ -205,7 +205,7 @@ export default function CubeViewer({
               <div
                 key={idx}
                 className={`border border-black ${getCubeColorClass(
-                  color
+                  color,
                 )} rounded-md cursor-pointer relative ${
                   isHighlighted
                     ? "ring-4 ring-yellow-400 ring-opacity-80 shadow-lg shadow-yellow-400/50 animate-pulse"
