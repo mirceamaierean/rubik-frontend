@@ -146,7 +146,7 @@ export default function ImageUploadModal({
     }
   };
 
-  const faceLabels = ["Front", "Right", "Back", "Left", "Top", "Bottom"];
+  const faceLabels = ["Front", "Right", "Back", "Left", "Up", "Down"];
 
   if (!isOpen) return null;
 

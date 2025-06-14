@@ -60,8 +60,8 @@ export default function ColorDialog({
   // Get face name for display
   const getFaceName = (face: keyof RubiksCube["faces"]): string => {
     const faceNames = {
-      U: "Up (Top)",
-      D: "Down (Bottom)",
+      U: "Up",
+      D: "Down",
       F: "Front",
       B: "Back",
       L: "Left",

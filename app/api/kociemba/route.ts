@@ -1,11 +1,15 @@
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
-  // get the cube from the query params
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   const cubeString = req.nextUrl.searchParams.get("cubeString");
-
-  console.log(cubeString);
 
   const response = await fetch(
     `${process.env.FLASK_URL}/kociemba?cubeString=${cubeString}`,
