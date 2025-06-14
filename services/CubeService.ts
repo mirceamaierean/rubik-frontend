@@ -215,3 +215,13 @@ export const convertScrambleToAlgorithm = async (scramble: string) => {
   }
   return algorithm;
 };
+
+export const deleteCube = async (id: string) => {
+  const response = await fetch(`/api/cube/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete cube");
+  }
+  return await response.json();
+};

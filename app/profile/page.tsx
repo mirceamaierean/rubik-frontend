@@ -1,5 +1,5 @@
 "use client";
-import { getCubes } from "@/services/CubeService";
+import { getCubes, deleteCube } from "@/services/CubeService";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -15,6 +15,8 @@ export default function ProfilePage() {
   const [cubes, setCubes] = useState<Cube[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchCubes = async () => {
@@ -33,6 +35,19 @@ export default function ProfilePage() {
     };
     fetchCubes();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    try {
+      await deleteCube(id);
+      setCubes((prev) => prev.filter((c) => c.id !== id));
+      setDeleteId(null);
+    } catch (e) {
+      alert("Failed to delete cube.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
@@ -53,6 +68,7 @@ export default function ProfilePage() {
                   <th className="px-4 py-2 text-left">Description</th>
                   <th className="px-4 py-2 text-left">Scramble</th>
                   <th className="px-4 py-2 text-left">Created At</th>
+                  <th className="px-4 py-2 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -79,6 +95,14 @@ export default function ProfilePage() {
                     <td className="px-4 py-2 text-sm text-gray-500">
                       {new Date(cube.createdAt).toLocaleString()}
                     </td>
+                    <td className="px-4 py-2">
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onClick={() => setDeleteId(cube.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -86,6 +110,33 @@ export default function ProfilePage() {
           </div>
         )}
       </section>
+      {deleteId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">
+              Are you sure you want to delete this cube? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50"
+                onClick={() => handleDelete(deleteId)}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
